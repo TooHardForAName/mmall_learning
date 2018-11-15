@@ -66,6 +66,7 @@ public class Category {
     public Integer getSortOrder() {
         return sortOrder;
     }
+    //test
 
     public void setSortOrder(Integer sortOrder) {
         this.sortOrder = sortOrder;
@@ -85,5 +86,6 @@ public class Category {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
-    }git
+    }
+
 }
