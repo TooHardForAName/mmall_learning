@@ -33,7 +33,7 @@ public class UserController {
             session.setAttribute(Const.CURRENT_USER,response.getData());
         }
 
-//注释
+//注
         return response;
     }
 
