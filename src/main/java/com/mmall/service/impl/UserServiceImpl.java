@@ -2,6 +2,7 @@ package com.mmall.service.impl;
 
 import com.mmall.common.Const;
 import com.mmall.common.ServerResponse;
+import com.mmall.common.TokenCache;
 import com.mmall.dao.UserMapper;
 import com.mmall.pojo.User;
 import com.mmall.service.IUserService;
@@ -10,6 +11,8 @@ import org.apache.commons.codec.digest.Md5Crypt;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -90,5 +93,33 @@ public class UserServiceImpl implements IUserService {
             return ServerResponse.createByErrorMessage("参数错误");
         }
         return ServerResponse.createBySuccessMessage("校验成功");
+    }
+
+    @Override
+    public ServerResponse<String> selectQuestion(String username) {
+        //先检查用户名在数据库中是否存在
+        ServerResponse validResponse=checkValid(username,Const.USERNAME);
+        if (validResponse.isSuccess()){
+            return ServerResponse.createByErrorMessage("用户不存在");
+        }
+        //当确认用户在数据库中存在的时候，执行查询
+        String question=userMaper.selectQuestionByUsername(username);
+        if (StringUtils.isNotBlank(question)){
+            return ServerResponse.createBySuccess(question);
+        }
+        return ServerResponse.createByErrorMessage("用户找回密码的问题为空");
+    }
+
+    @Override
+    public ServerResponse<String> checkAnswer(String username, String question, String answer) {
+        //在数据库中查询对应用户的问题和密码
+        int resultCount=userMaper.checkAnswer(username,question,answer);
+        //当resultCount>0的时候表示该用户名对应的问题和答案都正确，验证通过
+        if (resultCount>0){
+            String forgetToken= UUID.randomUUID().toString();
+            TokenCache.setKey("token_"+username,forgetToken);
+            return ServerResponse.createBySuccess(forgetToken);
+        }
+        return ServerResponse.createByErrorMessage("密保问题的答案错误");
     }
 }
